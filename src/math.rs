@@ -77,6 +77,24 @@ impl Vector3 {
     pub fn lerp(&self, other: &Self, portion: f32) -> Self {
         self + &(other - self).mult(portion)
     }
+    pub fn rotate_x_axis(&self, angle: f32) -> Self {
+        Self { 
+            x: self.x, 
+            y: self.y * angle.cos() - self.z * angle.sin(), 
+            z: self.y * angle.sin() + self.z * angle.cos(), }
+    }
+    pub fn rotate_y_axis(&self, angle: f32) -> Self {
+        Self { 
+            x: self.x * angle.cos() + self.z * angle.sin(), 
+            y: self.y, 
+            z: -self.x * angle.sin() + self.z * angle.cos(), }
+    }
+    pub fn rotate_z_axis(&self, angle: f32) -> Self {
+        Self { 
+            x: self.x * angle.cos() - self.y * angle.sin(), 
+            y: self.x * angle.sin() + self.y * angle.cos(),
+            z: self.z,  }
+    }
 }
 impl ops::Add for &Vector3 {
     type Output = Vector3;

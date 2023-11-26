@@ -57,9 +57,11 @@ impl Scene {
             &Vector3::new(-1.5, 1.0, 0.5), Material::CUBE);
         let cube2 = FigureKind::new_cube_from_d(
             &Vector3::new(0.5, 0.5, 1.0), 
-            &Vector3::new(1.0, 0.0, -0.4), 
-            &Vector3::new(0.0, 1.5, 0.0), 
-            &Vector3::new(-0.4, 0.0, -1.0), Material::CUBEMETALIC);
+            &Vector3::new(1.0, 0.0, 0.0).rotate_y_axis(std::f32::consts::PI / 6.0 ), 
+            &Vector3::new(0.0, 1.499, 0.0).rotate_y_axis(std::f32::consts::PI / 6.0 ), 
+            &Vector3::new(0.0, 0.0, -1.0).rotate_y_axis(std::f32::consts::PI / 6.0 ), Material::CUBEMETALIC);
+        let sphere = FigureKind::Sphere { r: 0.2, pos: Vector3 { x: -1.0, y: 1.5, z: -0.5 }, m: Material::CUBETRANSPARENT };
+        
         let v = vec![
             top, 
             front, 
@@ -68,7 +70,8 @@ impl Scene {
             right,
             back,
             cube,
-            cube2
+            cube2,
+            sphere
         ];
 
         let l = LightSource { pos: Vector3::new(0.1, -1.6, -0.1), color: Color::WHITE.to_vector3(), intencity: 1.0 };

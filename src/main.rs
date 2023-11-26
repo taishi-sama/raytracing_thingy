@@ -1,11 +1,8 @@
-use std::{time::Instant, env::{Args, self}};
+use std::{time::Instant, env::{self}};
 
-use color::Color;
-use figure::FigureKind;
-use material::Material;
-use math::{Ray, Vector3};
+
 use raytracer::{render, save_to_image};
-use scene::{RenderSurface, Scene, LightSource};
+use scene::Scene;
 
 pub mod color;
 pub mod figure;
