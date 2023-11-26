@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use image::{RgbImage, Rgb, Rgba};
+use image::RgbImage;
 use rayon::prelude::*;
 
 use crate::{color::Color, scene::{Scene, LightSource}, math::{Ray, Vector3, EPSILON}, material::{Material, AIR_REFRACTION}, figure::FigureKind};
@@ -54,9 +54,11 @@ pub fn raytrace(iter: u32, scene: &Scene, r: &Ray, portion: f32) -> Vector3 {
         let m = f.get_material();
         let int = m.base_illumination;
         let mut color = m.color.mult(int);
-        if let Some(c) = shadow_part(scene, r,&t, &normal, &scene.light, m) {
-            let c_res = c.mult_per_element(&m.color);
-            color += c_res;
+        for l in &scene.lights {
+            if let Some(c) = shadow_part(scene, r,&t, &normal, l, m) {
+                let c_res = c.mult_per_element(&m.color);
+                color += c_res;
+            }
         }
         if m.refl > EPSILON {
             let c = mirror_part(iter, scene, &t, r, &normal, portion * m.refl);
@@ -110,7 +112,7 @@ pub fn mirror_part(iter: u32, scene: &Scene, point: &Vector3, r: &Ray, side_norm
 }
 pub fn refraction_part(iter: u32 ,scene: &Scene, point: &Vector3, r: &Ray, side_normal: &Vector3, f: &FigureKind, portion: f32, m: &Material) -> Vector3 {
     //if portion < EPSILON { return Vector3::new(0.0, 0.0, 0.0); }
-    //if iter > 1000 {return  Vector3::new(1.0, 1.0, 1.0);}
+    if iter > 10 {return  Vector3::new(0.0, 0.0, 0.0);}
     let normal_product = r.dir.scalar_product(side_normal);
     let (n1, n2, norm, normal_vec) =  if normal_product < 0.0 {
         //Входим в материал
@@ -120,7 +122,7 @@ pub fn refraction_part(iter: u32 ,scene: &Scene, point: &Vector3, r: &Ray, side_
     };
 
     let n1n2 = n1 / n2;
-    let under_root_expr = 1.0 - (n1n2).powi(2)*(1.0 - norm.powi(2));
+    let _under_root_expr = 1.0 - (n1n2).powi(2)*(1.0 - norm.powi(2));
     let cos_fita = f32::sqrt(1.0 - (n1n2).powi(2)*(1.0 - norm.powi(2)));
     //if cos_fita.is_nan() {cos_fita = 0.0}
     if cos_fita.is_nan() {

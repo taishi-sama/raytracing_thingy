@@ -59,17 +59,17 @@ impl FigureKind {
     }   
     pub fn intersect(&self, ray: &Ray) -> Option<Vector3> {
         match self {
-            FigureKind::Side { pos, m, normal } => Self::rectangle_intersect(ray, &pos[0], &pos[1], &pos[2], normal),
-            FigureKind::Cube { pos, m, normals } => Self::cube_intersect(ray, pos, normals).map(|x|x.0),
-            FigureKind::Sphere { r, pos, m } => Self::sphere_intersect(ray, *r, pos),
+            FigureKind::Side { pos, normal, .. } => Self::rectangle_intersect(ray, &pos[0], &pos[1], &pos[2], normal),
+            FigureKind::Cube { pos, normals, .. } => Self::cube_intersect(ray, pos, normals).map(|x|x.0),
+            FigureKind::Sphere { r, pos, .. } => Self::sphere_intersect(ray, *r, pos),
         }
     }
     //Точка пересечения и нормаль
     pub fn intersect_with_normal(&self, ray: &Ray) -> Option<(Vector3, Vector3)> {
         match self {
-            FigureKind::Side { pos, m, normal } => Self::rectangle_intersect(ray, &pos[0], &pos[1], &pos[2], normal).map(|x|(x, *normal)),
-            FigureKind::Cube { pos, m, normals } => Self::cube_intersect(ray, pos, normals).map(|x|(x.0, normals[x.1])),
-            FigureKind::Sphere { r, pos, m } => Self::sphere_intersect(ray, *r, pos).map(|x|
+            FigureKind::Side { pos, normal, ..} => Self::rectangle_intersect(ray, &pos[0], &pos[1], &pos[2], normal).map(|x|(x, *normal)),
+            FigureKind::Cube { pos, normals, .. } => Self::cube_intersect(ray, pos, normals).map(|x|(x.0, normals[x.1])),
+            FigureKind::Sphere { r, pos, .. } => Self::sphere_intersect(ray, *r, pos).map(|x|
                 (x, (&x - pos).normalize())
             ),
         }
@@ -122,7 +122,6 @@ impl FigureKind {
         if let Some(p) = Self::rectangle_intersect(r, &dots[3], &dots[2], &dots[7], &normals[5]) {
             let tmp = (p - r.pos).len_sq();
             if tmp < d {
-                d = tmp;
                 t = (p, 5)
             }
         }

@@ -80,13 +80,13 @@ impl Material {
     };
     pub const CUBETRANSPARENT: Material = Material {
         color: Vector3::new(0.9, 0.9, 0.9),
-        refl: 0.1,
+        refl: 0.05,
         //diff: 1.0,
-        diff: 0.2,
+        diff: 0.1,
 
-        specular: 0.1,
+        specular: 0.05,
         shininess: 1.0,
-        transparency: 0.95,
+        transparency: 0.99,
         refraction: GLASS_REFRACTION,
         base_illumination: 0.01,
     };

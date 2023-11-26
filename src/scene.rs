@@ -7,7 +7,7 @@ use crate::{
 pub struct Scene {
     pub figures: Vec<FigureKind>,
     pub image: RenderSurface,
-    pub light: LightSource,
+    pub lights: Vec<LightSource>,
 }
 
 impl Scene {
@@ -74,9 +74,10 @@ impl Scene {
             sphere
         ];
 
-        let l = LightSource { pos: Vector3::new(0.1, -1.6, -0.1), color: Color::WHITE.to_vector3(), intencity: 1.0 };
+        let l1 = LightSource { pos: Vector3::new(1.6, -1.6, -0.1), color: Color::WHITE.to_vector3(), intencity: 1.5 };
+        let l2 = LightSource { pos: Vector3::new(-1.6, -1.6, -0.1), color: Color::WHITE.to_vector3(), intencity: 1.5 };
 
-        Scene { figures: v, image: r, light: l }
+        Scene { figures: v, image: r, lights: vec![l1, l2] }
     }
 }
 
