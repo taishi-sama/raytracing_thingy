@@ -19,6 +19,9 @@ impl Ray {
     pub fn point_from_t(&self, t: f32) -> Vector3 {
         self.pos + self.dir.mult(t)
     }
+    pub fn move_forward(&self, len: f32) -> Ray {
+        Ray{ pos: self.pos + self.dir.mult(len), dir: self.dir }
+    }
 }
 #[derive(Debug, Clone, Copy)]
 pub struct Vector3{

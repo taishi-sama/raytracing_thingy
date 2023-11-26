@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use image::{RgbImage, Rgb, Rgba};
 use rayon::prelude::*;
 
-use crate::{color::Color, scene::{Scene, LightSource}, math::{Ray, Vector3, EPSILON}};
+use crate::{color::Color, scene::{Scene, LightSource}, math::{Ray, Vector3, EPSILON}, material::Material};
 
 pub fn render(scene: &Scene, x: usize, y: usize) -> Vec<Color> {
     let p: Vec<_> = scene.image.get_rays(x, y).into_iter().enumerate().collect();
@@ -11,7 +11,7 @@ pub fn render(scene: &Scene, x: usize, y: usize) -> Vec<Color> {
     let b = Mutex::new(vec![Color::BLACK; x * y]);
     p.par_chunks(500)
         .for_each(|x|x.iter()
-            .for_each(|(i, y)| b.lock().unwrap()[*i] = Color::from_vector3(&raytrace(scene, y))));
+            .for_each(|(i, y)| b.lock().unwrap()[*i] = Color::from_vector3(&raytrace(scene, y, 1.0))));
     b.into_inner().unwrap()
 }
 
@@ -21,11 +21,12 @@ pub fn save_to_image(i: &[Color], x:usize, y: usize) -> RgbImage {
 }
 #[inline(always)]
 pub fn intencity_distance(int: f32, dist: f32) -> f32 {
-    int / (dist.powi(2) * 0.5 + dist * 0.5 )
+    int / (dist.powi(2) * 0.3 + dist * 0.5 )
 }
 
 //Цвет пикселя
-pub fn raytrace(scene: &Scene, r: &Ray) -> Vector3 {
+
+pub fn raytrace(scene: &Scene, r: &Ray, portion: f32) -> Vector3 {
     let mut d = f32::MAX;
     let mut f_i = usize::MAX;
     for (i, f) in scene.figures.iter().enumerate() {
@@ -39,45 +40,57 @@ pub fn raytrace(scene: &Scene, r: &Ray) -> Vector3 {
     }
     if f_i != usize::MAX {
         let f = &scene.figures[f_i];
-        let (t, normal) = f.intersect_with_normal(&r).unwrap();
+        let (t, normal) = f.intersect_with_normal(r).unwrap();
         let m = f.get_material();
-        let mut int = m.base_illumination;
+        let int = m.base_illumination;
         let mut color = m.color.mult(int);
-        if let Some((intencity, dist, c)) = shadowray(scene, &t, &normal, &scene.light) {
-            let local = intencity_distance(intencity, dist) * m.diff;
+        if let Some(c) = shadowray(scene, r,&t, &normal, &scene.light, m) {
             let c_res = c.mult_per_element(&m.color);
-            int += local;
-            color += c_res.mult(local);
+            color += c_res;
         }
-        color
+        if m.refl > EPSILON {
+            let c = mirrorray(scene, &t, r, &normal, portion * m.refl);
+            color += c;
+        }
+        color.mult(portion)
     }
     else {
         Vector3{x:0.0, y:0.0, z:0.0}
     }
 }
-//Интенсивность источника, расстояние до источника, цвет как вектор
-pub fn shadowray(scene: &Scene, point: &Vector3, side_normal: &Vector3, l: &LightSource) -> Option<(f32, f32, Vector3)> {
+//Цвет как вектор
+pub fn shadowray(scene: &Scene, t: &Ray, point: &Vector3, side_normal: &Vector3, l: &LightSource, m: &Material) -> Option<Vector3> {
     let d = &l.pos - point;
     let d_len = d.len();
     let d_norm = d.div(d_len);
     //println!("Point of collision: {point}, vector to light: {d_norm}");
-    
-    if d.scalar_product(side_normal) > 0.0 {
-        let r = &Ray { pos: *point, dir: d_norm };
+    let diff = d_norm.scalar_product(side_normal);
+    if diff > 0.0 {
+        let light_ray = &Ray { pos: *point, dir: d_norm };
         let mut intensity = l.intencity;
         let mut color = l.color;
         for i in &scene.figures {
-            if let Some(p) = i.intersect(r) {
+            if let Some(p) = i.intersect(light_ray) {
                 if (&p - point).len() < d_len {
                     let m = i.get_material();
                     intensity *= m.transparency;
                     if intensity < EPSILON {return None};
-                    color += color.mult_per_element(&m.color);
+                    color = color.mult_per_element(&m.color);
                 }
             }
         }
-        Some((intensity, d_len, color) )
+        let refl = light_ray.reflect(point, side_normal);
+
+        let diff_part = m.diff * diff;
+        let spec_part = m.specular * refl.dir.scalar_product(&t.dir).max(-0.2).powf(m.shininess);
+        //let spec_part = 0.0;
+        let local = intencity_distance(intensity, d_len);
+        Some(color.mult((diff_part + spec_part) * local))
     }
     else {None}
 }
-//pub fn mirrorray(scene: &Scene, point: &Vector3)
+pub fn mirrorray(scene: &Scene, point: &Vector3, r: &Ray, side_normal: &Vector3, portion: f32) -> Vector3 {
+    if portion < EPSILON { return Vector3::new(0.0, 0.0, 0.0); }
+    let t = r.reflect(point, side_normal);
+    raytrace(scene, &t, portion)
+}

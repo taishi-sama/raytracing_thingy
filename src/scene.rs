@@ -24,17 +24,17 @@ impl Scene {
             &Vector3::new(-2.0, -2.0, -2.0),
             &Vector3::new(-2.0, -2.0, 2.0),
             &Vector3::new(2.0, -2.0, -2.0), 
-            Material::BACKWALLS);
+            Material::FRONTWALLS);
         let front = FigureKind::new_side(
             &Vector3::new(-2.0, -2.0, 2.0),
             &Vector3::new(-2.0, 2.0, 2.0),
             &Vector3::new(2.0, -2.0, 2.0), 
-            Material::BACKWALLS);
+            Material::FRONTWALLS);
         let down = FigureKind::new_side(
           &Vector3::new(-2.0, 2.0, -2.0),
           &Vector3::new(2.0, 2.0, -2.0),
           &Vector3::new(-2.0, 2.0, 2.0),
-          Material::BACKWALLS);
+          Material::FRONTWALLS);
         let left = FigureKind::new_side(
             &Vector3::new(-2.0, -2.0, 2.0),
             &Vector3::new(-2.0, -2.0, -2.0),
@@ -71,7 +71,7 @@ impl Scene {
             cube2
         ];
 
-        let l = LightSource { pos: Vector3::new(0.1, -1.9, -0.1), color: Color::WHITE.to_vector3(), intencity: 1.0 };
+        let l = LightSource { pos: Vector3::new(0.1, -1.6, -0.1), color: Color::WHITE.to_vector3(), intencity: 1.0 };
 
         Scene { figures: v, image: r, light: l }
     }
