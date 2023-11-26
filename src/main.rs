@@ -15,7 +15,6 @@ pub mod raytracer;
 pub mod scene;
 
 fn main() {
-
     let default_res = 500;
     let pixels = if let Some(t) = env::args().nth(1) {
         t.parse().unwrap_or(default_res)
