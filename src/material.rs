@@ -49,8 +49,8 @@ impl Material {
     };
     pub const CUBE: Material = Material {
         color: Vector3::new(1.0, 1.0, 0.2),
-        refl: 0.1,
-        diff: 0.9,
+        refl: 0.0,
+        diff: 1.0,
         specular: 0.3,
         shininess: 1.0,
         transparency: 0.0,
@@ -64,5 +64,14 @@ impl Material {
         shininess: 1.0,
         transparency: 0.0,
         base_illumination: 0.05,
+    };
+    pub const MIRRORMATERIAL: Material = Material {
+        color: Vector3::new(1.0, 1.0, 1.0),
+        refl: 0.99,
+        diff: 0.01,
+        specular: 0.01,
+        shininess: 1.0,
+        transparency: 0.0,
+        base_illumination: 0.01,  
     };
 }

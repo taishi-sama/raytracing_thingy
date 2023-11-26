@@ -86,6 +86,7 @@ impl FigureKind {
             }
         }
         
+        
         if let Some(p) = Self::rectangle_intersect(r, &dots[0], &dots[1], &dots[3], &normals[1]) {
             let tmp = (p - r.pos).len_sq();
             if tmp < d {

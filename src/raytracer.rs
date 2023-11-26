@@ -9,9 +9,18 @@ pub fn render(scene: &Scene, x: usize, y: usize) -> Vec<Color> {
     let p: Vec<_> = scene.image.get_rays(x, y).into_iter().enumerate().collect();
 
     let b = Mutex::new(vec![Color::BLACK; x * y]);
-    p.par_chunks(500)
-        .for_each(|x|x.iter()
-            .for_each(|(i, y)| b.lock().unwrap()[*i] = Color::from_vector3(&raytrace(scene, y, 1.0))));
+    let chunk_size = 1000;
+    p.par_chunks(chunk_size)
+        .for_each(|x|{
+            let temp_buffer : Vec<_> = 
+            x.iter()
+            .map(|(i, y)|(i, Color::from_vector3(&raytrace(scene, y, 1.0)))).collect();
+            let mut t =  b.lock().unwrap();
+            for (i, c) in temp_buffer {
+                t[*i] = c;
+            }
+            //drop(t)
+        });
     b.into_inner().unwrap()
 }
 
